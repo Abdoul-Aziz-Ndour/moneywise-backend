@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from rest_framework import generics, viewsets, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -250,7 +251,7 @@ class AlerteBudgetViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def verifier_alertes(request):
-    alertes_dépassées = []
+    alertes_depassees = []
     alertes = AlerteBudget.objects.filter(utilisateur=request.user, actif=True)
     mois = datetime.now().month
     annee = datetime.now().year
@@ -263,13 +264,13 @@ def verifier_alertes(request):
             date__year=annee
         ).aggregate(total=Sum('montant'))['total'] or 0
         if total >= alerte.seuil:
-            alertes_dépassées.append({
+            alertes_depassees.append({
                 'categorie': alerte.categorie.nom,
                 'seuil': alerte.seuil,
                 'depense_actuelle': total,
                 'message': f"⚠️ Budget dépassé pour {alerte.categorie.nom} !"
             })
     return Response({
-        'alertes_dépassées': alertes_dépassées,
-        'nb_alertes': len(alertes_dépassées)
+        'alertes_depassees': alertes_depassees,
+        'nb_alertes': len(alertes_depassees)
     })
