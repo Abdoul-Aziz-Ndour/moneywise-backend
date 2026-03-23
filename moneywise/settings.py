@@ -55,7 +55,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'moneywise-backend',
         'USER': 'postgres',
-        'PASSWORD': '123456',
+        'PASSWORD': 'adama@12',
         'HOST': 'localhost',
         'PORT': '5432',
     }
