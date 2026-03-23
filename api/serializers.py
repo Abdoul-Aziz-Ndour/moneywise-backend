@@ -1,38 +1,73 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import (
+# -*- coding: utf-8 -*-
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+from .models import Categorie, Transaction, AlerteBudget
 
-    from django.contrib import admin
-from django.urls import path, include
+User = get_user_model()
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
-]
-    RegisterView, me_view,
-    CategorieViewSet, TransactionViewSet,
-    dashboard_view, export_excel, export_pdf, rapport_mensuel,
-    AlerteBudgetViewSet, verifier_alertes,
-    password_reset_request, password_reset_confirm
-)
 
-router = DefaultRouter()
-router.register(r'categories', CategorieViewSet, basename='categorie')
-router.register(r'transactions', TransactionViewSet, basename='transaction')
-router.register(r'alertes', AlerteBudgetViewSet, basename='alerte')
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=6)
 
-urlpatterns = [
-    path('auth/register/', RegisterView.as_view(), name='register'),
-    path('auth/login/', TokenObtainPairView.as_view(), name='login'),
-    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('auth/me/', me_view, name='me'),
-    path('auth/password-reset/', password_reset_request, name='password_reset'),
-    path('auth/password-reset/<uidb64>/<token>/', password_reset_confirm, name='password_reset_confirm'),
-    path('dashboard/', dashboard_view, name='dashboard'),
-    path('export/excel/', export_excel, name='export_excel'),
-    path('export/pdf/', export_pdf, name='export_pdf'),
-    path('rapport/mensuel/', rapport_mensuel, name='rapport_mensuel'),
-    path('alertes/verifier/', verifier_alertes, name='verifier_alertes'),
-    path('', include(router.urls)),
-]
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'password']
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        return user
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'date_creation']
+
+
+class CategorieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Categorie
+        fields = ['id', 'nom', 'type', 'icone', 'utilisateur']
+        read_only_fields = ['utilisateur']
+
+    def create(self, validated_data):
+        validated_data['utilisateur'] = self.context['request'].user
+        return super().create(validated_data)
+
+
+class TransactionSerializer(serializers.ModelSerializer):
+    categorie_nom = serializers.CharField(source='categorie.nom', read_only=True)
+
+    class Meta:
+        model = Transaction
+        fields = ['id', 'utilisateur', 'categorie', 'categorie_nom',
+                  'montant', 'type', 'description', 'date']
+        read_only_fields = ['utilisateur', 'date']
+
+    def create(self, validated_data):
+        validated_data['utilisateur'] = self.context['request'].user
+        return super().create(validated_data)
+
+
+class AlerteBudgetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AlerteBudget
+        fields = ['id', 'utilisateur', 'categorie', 'seuil', 'actif']
+        read_only_fields = ['utilisateur']
+
+    def create(self, validated_data):
+        validated_data['utilisateur'] = self.context['request'].user
+        return super().create(validated_data)
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Aucun compte avec cet email.")
+        return value
