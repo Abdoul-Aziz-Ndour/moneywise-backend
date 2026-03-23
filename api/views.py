@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+# -*- coding: utf-8 -*-
+=======
+>>>>>>> origin/pre-recette
 from rest_framework import generics, viewsets, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -250,7 +254,11 @@ class AlerteBudgetViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def verifier_alertes(request):
+<<<<<<< HEAD
+    alertes_depassees = []
+=======
     alertes_dépassées = []
+>>>>>>> origin/pre-recette
     alertes = AlerteBudget.objects.filter(utilisateur=request.user, actif=True)
     mois = datetime.now().month
     annee = datetime.now().year
@@ -263,13 +271,22 @@ def verifier_alertes(request):
             date__year=annee
         ).aggregate(total=Sum('montant'))['total'] or 0
         if total >= alerte.seuil:
+<<<<<<< HEAD
+            alertes_depassees.append({
+=======
             alertes_dépassées.append({
+>>>>>>> origin/pre-recette
                 'categorie': alerte.categorie.nom,
                 'seuil': alerte.seuil,
                 'depense_actuelle': total,
                 'message': f"⚠️ Budget dépassé pour {alerte.categorie.nom} !"
             })
     return Response({
+<<<<<<< HEAD
+        'alertes_depassees': alertes_depassees,
+        'nb_alertes': len(alertes_depassees)
+=======
         'alertes_dépassées': alertes_dépassées,
         'nb_alertes': len(alertes_dépassées)
+>>>>>>> origin/pre-recette
     })

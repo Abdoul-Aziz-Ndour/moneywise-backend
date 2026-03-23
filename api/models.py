@@ -1,14 +1,15 @@
+# -*- coding: utf-8 -*-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
-    date_creation = models.DateTimeField(auto_now_add=True)
+    date_creation = models.DateTimeField(auto_now_add=True, null=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
-    def _str_(self):
+    def __str__(self):
         return self.email
 
 
@@ -22,7 +23,7 @@ class Categorie(models.Model):
         related_name='categories', null=True, blank=True
     )
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.nom} ({self.type})"
 
 
@@ -43,7 +44,7 @@ class Transaction(models.Model):
     class Meta:
         ordering = ['-date']
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.type} - {self.montant} ({self.date.date()})"
 
 
@@ -57,5 +58,5 @@ class AlerteBudget(models.Model):
     seuil = models.DecimalField(max_digits=10, decimal_places=2)
     actif = models.BooleanField(default=True)
 
-    def _str_(self):
+    def __str__(self):
         return f"Alerte {self.categorie.nom} - {self.seuil}"
