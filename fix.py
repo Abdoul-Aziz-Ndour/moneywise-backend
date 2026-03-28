@@ -1,4 +1,5 @@
-from django.urls import path
+f = open('api/urls.py', 'w', encoding='utf-8')
+f.write("""from django.urls import path
 from rest_framework.routers import DefaultRouter
 from . import views
 
@@ -15,3 +16,6 @@ urlpatterns = [
 ]
 
 urlpatterns += router.urls
+""")
+f.close()
+print('SUCCES !')
